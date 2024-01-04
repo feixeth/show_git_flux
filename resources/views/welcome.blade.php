@@ -5,6 +5,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Show Git Activity</title>
+
+        @vite(['resources/scss/app.scss','resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
        <header>
@@ -15,10 +17,17 @@
             </div>
        </header>
        <main>
+        <div class="gradient"></div>
             <div class="container">
+                
                 <div class="title">
-                    <h2>Board</h2>
+                    <h2>Enter PAT Below</h2>
                 </div>
+                @if(session('error'))
+                    <div class="alert alert-error">
+                        {{ session('error') }}
+                    </div>
+                @endif
                 @if(session('success'))
                     <div class="alert alert-success">
                         {{ session('success') }}
