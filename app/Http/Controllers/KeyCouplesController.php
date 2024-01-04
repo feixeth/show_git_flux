@@ -34,7 +34,7 @@ class KeyCouplesController extends Controller
                 'githubkey' => 'required|string',
                 'gitlabkey' => 'required|string',
             ]);
-             
+             var_dump('validated : ' . $validatedData);
             // encrypt key before storage
             $hubKey = Crypt::encrypt($validatedData['githubkey']);
             $labKey = Crypt::encrypt($validatedData['gitlabkey']);
@@ -44,7 +44,7 @@ class KeyCouplesController extends Controller
                 'githubkey' => $hubKey,
                 'gitlabkey' => $labKey,
             ]);
-
+            var_dump('keycouple : ' . $keyCouple);
             //store/save this to DB
             $keyCouple->save();
             

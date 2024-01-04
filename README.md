@@ -3,7 +3,7 @@
 
 ShowGitFlux is a web-app that i'm actually building from scratch for,
 First, improve some skills, and review old basics,
-Secondly, i've been looking around to find someone that let me fetch my git activity from different services ( Gitlab & Github basically ).
+Secondly, i've been looking around to find someone that let me fetch my git activity from different instance, private and public. ( Gitlab & Github basically ).
 
 
 ## Contributing
