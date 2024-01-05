@@ -15,17 +15,15 @@
             </div>
        </header>
        <main>
-        <div class="container">
-                @if(session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
-                <div>
-                    
-                </div>
+        
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
             </div>
-        </div>
+        @endif
+        <h1>GitHub Activity</h1>
+
+        <p>Generated URL: /*$generatedUrl*/</p>
        </main>
        <footer>
 

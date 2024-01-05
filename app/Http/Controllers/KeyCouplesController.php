@@ -15,18 +15,8 @@ use Illuminate\Support\Facades\Crypt;
 class KeyCouplesController extends Controller
 {
 
-    /**
-     * Show the form for creating a new resource.
-     
-    public function create(Request $request)
-    {
+    private $keyCoupleId; // to retrieve the key couple on the git feed
 
-    }
-        */
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -49,8 +39,10 @@ class KeyCouplesController extends Controller
             //store/save this to DB
             $keyCouple->save();
             
+            $this->keyCoupleId = $keyCouple->id;
+
             // Call the showActivity method to display the activity
-            $this->showActivity($hubKey, $labKey); 
+            $this->showActivity($hubKey, $labKey, $this->keyCoupleId); 
             
             } catch (\Exception $e) {
                 Log::error('Error in showActivity: ' . $e->getMessage());
@@ -63,70 +55,90 @@ class KeyCouplesController extends Controller
     /**
      * Display the activity based on the keys.
      */
-    public function showActivity($hubKey, $labKey)
-    {
+        public function showActivity($hubKey, $labKey, $keyCoupleId)
+        {
+            try {
+                // Decrypt the keys to use in API requests
+                $decryptedHubKey = Crypt::decrypt($hubKey);
+                $decryptedLabKey = Crypt::decrypt($labKey);
 
-        try {
-            // Decrypt the keys to use in API requests
-            $decryptedHubKey = Crypt::decrypt($hubKey);
-            $decryptedLabKey = Crypt::decrypt($labKey);
+                // Fetch GitHub activity
+                $githubData = $this->fetchGitHubActivity($decryptedHubKey);
 
-            // Fetch GitHub activity (replace with actual GitHub API endpoint and logic)
-            $githubResponse = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $decryptedHubKey,
-            ])->get('https://api.github.com/user/repos');
-                
-            $githubData = $githubResponse->json();
-            
+                // Fetch GitLab activity
+                $gitlabData = $this->fetchGitLabActivity($decryptedLabKey);
+
+                // Build HTML content
+                $htmlContent = view('showactivity')
+                    ->with('githubData', $githubData)
+                    ->with('gitlabData', $gitlabData)
+                    ->render();
+
+                // Log HTML content for debugging
+                Log::info('HTML Content:', ['content' => $htmlContent]);
+
+                // Generate a unique URL (you may want to implement your own logic)
+                $generatedUrl = md5(now());
+
+                Log::info('Decrypted Hub Key:', ['decryptedHubKey' => $decryptedHubKey]);
+                Log::info('Decrypted Lab Key:', ['decryptedLabKey' => $decryptedLabKey]);
+                Log::info('Key Couple ID:', ['keyCoupleId' => $keyCoupleId]);
+
+                // Save the data to the GitFeed table
+                $gitFeed = GitFeed::create([
+                    'generated_url' => $generatedUrl,
+                    'html_content' => $htmlContent,
+                    'key_couple_id' => $keyCoupleId,
+                ]);
+
+                // Attach the keyCouple relationship
+                $keyCouple = $this->getKeyCouple($decryptedHubKey, $decryptedLabKey);
+
+                if (!$keyCouple) {
+                    return redirect()->back()->with('error', 'Key couple not found.');
+                }
+
+                $gitFeed->keyCouple()->associate($keyCouple->id);
+                $gitFeed->save();
 
 
-            // Fetch GitLab activity (replace with actual GitLab API endpoint and logic)
-            $gitlabResponse = Http::withHeaders([
-                'PRIVATE-TOKEN' => $decryptedLabKey,
-            ])->get('https://gitlab.com/api/v4/user');
 
-            $gitlabData = $gitlabResponse->json();
+                // Redirect to the showactivity.blade.php view with success message and generated URL
+                return view('showactivity')
+                    ->with('htmlContent', $htmlContent)
+                    ->with('success', 'Storage OK')
+                    ->with('generatedUrl', $generatedUrl);
 
-            // Build HTML content (replace with your HTML content logic)
-            $htmlContent = view('activity.show')
-                ->with('githubData', $githubData)
-                ->with('gitlabData', $gitlabData)
-                ->render();
-
-            // Save the data to the gitfeed table
-            $gitFeed = new GitFeed([
-                'generated_url' => 'YOUR_GENERATED_URL', // replace with your logic to generate the URL
-                'html_content' => $htmlContent,
-            ]);
-
-            // Attach the keyCouple relationship
-            $gitFeed->keyCouple()->associate($keyCouple);
-            $gitFeed->save();
-
-            // redirect to the recap view with success message and HTML content
-            return view('/showactivity')
-                ->with('htmlContent', $htmlContent)
-                ->with('success', 'Storage OK');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'An error occurred while fetching API data.');
+            } catch (\Exception $e) {
+                // Log the exception for debugging
+                Log::error('Exception in showActivity:', ['exception' => $e]);
+                return redirect()->back()->with('error', 'An error occurred while fetching API data. Check logs for details.');
+            }
         }
-    }
 
+        protected function fetchGitHubActivity($token)
+        {
+            return Http::withHeaders(['Authorization' => 'Bearer ' . $token])
+                ->get('https://api.github.com/user/repos')
+                ->json();
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, KeyCouples $keyCouples)
-    {
-        //
-    }
+        protected function fetchGitLabActivity($token)
+        {
+            return Http::withHeaders(['PRIVATE-TOKEN' => $token])
+                ->get('https://gitlab.com/api/v4/user')
+                ->json();
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(KeyCouples $keyCouples)
-    {
-        //
-    }
+        protected function getKeyCouple($keyCoupleId)
+        {
+            try {
+                $keyCouple = KeyCouples::findOrFail($this->keyCoupleId);
+
+                return $keyCouple;
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                \Log::error("Key Couple Not Found for ID: $keyCoupleId");
+                return null; 
+            }
+        }
 }

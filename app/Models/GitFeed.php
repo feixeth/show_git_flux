@@ -14,6 +14,13 @@ class GitFeed extends Model
     protected $fillable = [
         'generated_url',
         'html_content',
+        'key_couple_id'
     ];
+
+    public function keyCouple()
+{
+    return $this->belongsTo(KeyCouples::class, 'key_couple_id');
+}
+
 
 }

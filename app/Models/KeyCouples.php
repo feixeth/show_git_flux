@@ -22,6 +22,6 @@ class KeyCouples extends Model
     // define relation with the key_couples
     public function keyCouple()
     {
-        return $this->belongTo(keyCouple::class,'key_couple_id');
+        return $this->belongTo(KeyCouples::class,'key_couple_id');
     }
 }
