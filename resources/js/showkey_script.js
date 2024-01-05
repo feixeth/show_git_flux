@@ -1,9 +1,4 @@
-console.log('loaded showkey script');
-
-
-
 export function showHubKey() {
-    console.log('showKey called in appjs');
   var x = document.getElementById("gitHubInput");
   if (x.type === "password") {
     x.type = "text";
@@ -11,7 +6,6 @@ export function showHubKey() {
     x.type = "password";
   }
 }
-
 
 export function showLabKey(){
     var y = document.getElementById("gitLabInput");

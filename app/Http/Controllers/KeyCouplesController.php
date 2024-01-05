@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\GitFeed;
 use App\Models\KeyCouples;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Crypt;
 
 
 
@@ -34,7 +35,7 @@ class KeyCouplesController extends Controller
                 'githubkey' => 'required|string',
                 'gitlabkey' => 'required|string',
             ]);
-             var_dump('validated : ' . $validatedData);
+
             // encrypt key before storage
             $hubKey = Crypt::encrypt($validatedData['githubkey']);
             $labKey = Crypt::encrypt($validatedData['gitlabkey']);
@@ -44,18 +45,18 @@ class KeyCouplesController extends Controller
                 'githubkey' => $hubKey,
                 'gitlabkey' => $labKey,
             ]);
-            var_dump('keycouple : ' . $keyCouple);
+
             //store/save this to DB
             $keyCouple->save();
             
             // Call the showActivity method to display the activity
             $this->showActivity($hubKey, $labKey); 
             
-        } 
-        catch (\Exception $e) {
-            return redirect()->back()
-                             ->with('error', 'Something went wrong, please try again');
-        };
+            } catch (\Exception $e) {
+                Log::error('Error in showActivity: ' . $e->getMessage());
+                return redirect()->back()
+                    ->with('error', 'An error occurred while fetching API data.');
+            }
     }
 
 
@@ -64,6 +65,7 @@ class KeyCouplesController extends Controller
      */
     public function showActivity($hubKey, $labKey)
     {
+
         try {
             // Decrypt the keys to use in API requests
             $decryptedHubKey = Crypt::decrypt($hubKey);
@@ -73,10 +75,10 @@ class KeyCouplesController extends Controller
             $githubResponse = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $decryptedHubKey,
             ])->get('https://api.github.com/user/repos');
-
+                
             $githubData = $githubResponse->json();
             
-            var_dump('hubresp ' . $githubResponse);
+
 
             // Fetch GitLab activity (replace with actual GitLab API endpoint and logic)
             $gitlabResponse = Http::withHeaders([

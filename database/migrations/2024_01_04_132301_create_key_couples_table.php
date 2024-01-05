@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('key_couples', function (Blueprint $table) {
             $table->id();
-            $table->string('hubkey');
-            $table->string('labkey');
+            $table->text('hubkey');
+            $table->text('labkey');
             $table->timestamps();
         });
     }

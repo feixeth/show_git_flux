@@ -14,7 +14,7 @@
        <header>
             <div>
                 <h1>
-                    Resume all your git activity
+                    RESUME YOUR GIT ACTIVITY
                 </h1>
 
             </div>
