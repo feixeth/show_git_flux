@@ -6,23 +6,22 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Show Git Activity</title>
 
-        @vite(['resources/scss/app.scss','resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/scss/app.scss','resources/css/app.css', 'resources/js/app.js', 'resources/js/showkey_script.js'])
+        
     </head>
     <body>
+
        <header>
             <div>
                 <h1>
-                    Show all your git activity
+                    Resume all your git activity
                 </h1>
+
             </div>
        </header>
        <main>
         <div class="gradient"></div>
             <div class="container">
-                
-                <div class="title">
-                    <h2>Enter PAT Below</h2>
-                </div>
                 @if(session('error'))
                     <div class="alert alert-error">
                         {{ session('error') }}
@@ -36,18 +35,21 @@
                 <div class="keyform">
                     <form method="POST" action="/create_couple">
                         @csrf
-                    <label for="githubkey">
-                        GitHub Key
-                    </label>
-                        <input name="githubkey" type="password" required>
-                            <br>
-
-                    <label for="gitlabkey">
-                        GitLab Key
-                    </label>
-                        <input name="gitlabkey" type="password" required>
-                            <br>
-
+                    <div class="githubpart">
+                        <label for="githubkey">
+                            
+                        </label>
+                            <input name="githubkey" type="password" id="gitHubInput" placeholder="Paste your Github PAT here" required>
+                            <input class="showHubButton" type="button" value="Show/Hide">
+                    </div>
+                        <br>
+                    <div class="gitlabpart">
+                        <label for="gitlabkey">
+                        </label>
+                            <input name="gitlabkey" type="password" id="gitLabInput" placeholder="Paste your Gitlab PAT here"  required>
+                            <input class="showLabButton" type="button" value="Show/Hide" >
+                    </div>
+                        <br>
                     <button class="keysubmit" type="submit" >Get your activity!</button>
                     </form>
                 </div>
@@ -57,4 +59,5 @@
 
        </footer>
     </body>
+    @vite('resources/js/app.js')
 </html>

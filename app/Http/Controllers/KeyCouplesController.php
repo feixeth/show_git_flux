@@ -54,7 +54,7 @@ class KeyCouplesController extends Controller
         } 
         catch (\Exception $e) {
             return redirect()->back()
-                             ->with('error', 'An error occurred while storing the data.');
+                             ->with('error', 'Something went wrong, please try again');
         };
     }
 
